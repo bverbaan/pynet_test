@@ -1,0 +1,11 @@
+device_name,device_type,ip address,username,password
+router1,cisco_ios,1.1.1.1.,user1,pass1
+router2,cisco_iosxr,2.2.2.2.,user2,pass2
+router3,cisco_ios,3.3.3.3.,user3,pass3
+router4,cisco_iosxr,4.4.4.4.,user4,pass4
+router5,cisco_ios,5.5.5.5.,user5,pass5
+switch1,cisco_ios,10.10.10.10,user6,pass6
+switch2,cisco_nxos,11.11.11.11,user7,pass7
+switch3,cisco_nxos,12.12.12.12,user8,pass8
+switch4,eos,13.13.13.13,user9,pass9
+switch5,eos,14.14.14.14,user10,pass10
