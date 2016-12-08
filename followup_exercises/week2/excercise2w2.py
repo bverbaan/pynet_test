@@ -3,6 +3,8 @@
 from netmiko import ConnectHandler
 from my_devices import device_list
 import re
+import threading
+from Queue import Queue
 from datetime import datetime
 
 def check_vlan_exists(output):
@@ -28,7 +30,7 @@ def Check_vlan_exists(output):
     pattern = r"%.*not found in current VLAN database"
     return not bool (re.search(pattern, output))
 
-def main():
+def ssh_conn(a_device, my_queue):
 
     new_vlans = [
         ('500', 'vlan11'),
@@ -36,10 +38,11 @@ def main():
         ('502', 'vlan33'),
     ]
 
-    for a_device in device_list:
-        net_conn = ConnectHandler(**a_device)
-	print net_conn.find_prompt()
-	for vlan_id, vlan_name in new_vlans:
+    net_conn = ConnectHandler(**a_device)
+    device_name = net_conn.base_prompt
+    output_dict = {device_name: {}}
+
+    for vlan_id, vlan_name in new_vlans:
             cmd = "show vlan id {}".format(vlan_id)
             print "Checking vlan_id: {}, vlan_name: {}".format(vlan_id, vlan_name)
 	    output = net_conn.send_command(cmd)
@@ -51,13 +54,32 @@ def main():
 	    if not vlan_exists or not vlan_name_correct:
 		print "Updating and/or adding vlan"
 		output = add_vlan(net_conn, vlan_id, vlan_name)
-                print "Done"
+		output_dict[device_name][vlan_id] = 'changed'
+                
             else:
-                print "VLAN exists and has correct name"
+                output_dict[device_name][vlan_id] = 'unchanged'
+    my_queue.put(output_dict)
 
-	print
+    print
+
+def main():
+
+    my_queue = Queue()
+
+    for a_device in device_list:
+        my_thread = threading.Thread(target=ssh_conn, args=(a_device, my_queue))
+        my_thread.start()
+
+    main_thread = threading.currentThread()
+    for some_thread in threading.enumerate():
+        if some_thread != main_thread:
+            some_thread.join()
+
+    while not my_queue.empty():
+        print my_queue.get()
+
 start_time = datetime.now()
-
+	
 if __name__ == "__main__":
     main()
 
