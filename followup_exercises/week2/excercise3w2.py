@@ -18,8 +18,8 @@ def check_vlan_name(output, vlan_name):
 
 def remove_vlan(net_connect, vlan_id, vlan_name=''):
     cmd1 = "no vlan " + str(vlan_id)
-
-    return net_connect.send_config_set(cmd1)
+    commands=[cmd1]
+    return net_connect.send_config_set(commands)
 
 
 def Check_vlan_exists(output):
